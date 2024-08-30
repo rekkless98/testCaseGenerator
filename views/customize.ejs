@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customize Test Cases</title>
+</head>
+<body>
+    <h1>Customize Test Cases</h1>
+    <form action="/customize-tests" method="POST">
+        <input type="hidden" name="framework" value="<%= framework %>">
+        <input type="hidden" name="functions" value='<%= JSON.stringify(functions) %>'>
+
+        <% functions.forEach(function(fn) { %>
+            <div class="test-case">
+                <h3>Function: <%= fn.name %></h3>
+                <p>Description: <%= fn.description %></p>
+
+                <label for="<%= fn.name %>-params">Customize Parameters (comma-separated):</label>
+                <input type="text" id="<%= fn.name %>-params" name="customizations[<%= fn.name %>][parameters]" placeholder="e.g., 1, 2">
+
+                <label for="<%= fn.name %>-expected">Expected Result:</label>
+                <input type="text" id="<%= fn.name %>-expected" name="customizations[<%= fn.name %>][expected]" placeholder="e.g., 3">
+            </div>
+        <% }) %>
+
+        <button type="submit">Generate Customized Test Cases</button>
+    </form>
+
+    <a href="/">Go Back</a>
+</body>
+</html>

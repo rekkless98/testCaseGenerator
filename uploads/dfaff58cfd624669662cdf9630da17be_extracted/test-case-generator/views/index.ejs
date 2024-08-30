@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Case Generator</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Test Case Generator</h1>
+        <form action="/upload" method="POST" enctype="multipart/form-data">
+            <label for="folder">Upload your JavaScript file:</label>
+            <input type="file" id="folder" name="folder" required>
+            <label for="framework">Select Testing Framework:</label>
+            <select id="framework" name="framework">
+                <option value="jest">Jest</option>
+                <option value="mocha">Mocha</option>
+            </select>
+            <button type="submit">Generate Test Cases</button>
+        </form>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Test Case Generator</p>
+    </footer>
+</body>
+</html>
