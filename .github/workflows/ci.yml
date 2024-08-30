@@ -1,17 +1,16 @@
-name: CI Pipeline
+name: CI
 
 on:
   push:
     branches:
-      - main
+      - master  
   pull_request:
     branches:
-      - main
+      - master  
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    runs-on: windows-latest  # Runs the job on the latest windows image
 
     steps:
     - name: Checkout code
@@ -20,7 +19,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: '14' # Use the appropriate version of Node.js
+        node-version: '14'  
 
     - name: Install dependencies
       run: npm install
@@ -28,5 +27,5 @@ jobs:
     - name: Run tests
       run: npm test
 
-    - name: Build
-      run: npm run build # Uncomment if you have a build step
+    # - name: Lint code
+    #   run: npm run lint
