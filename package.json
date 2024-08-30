@@ -5,9 +5,9 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "test": "jest", 
-    "build": "echo 'No build step specified'" 
-
+    "test": "jest",
+    "lint": "eslint .",
+    "build": "echo 'No build step specified'"
   },
   "keywords": [],
   "author": "",
@@ -20,5 +20,14 @@
     "express": "^4.19.2",
     "multer": "^1.4.5-lts.1",
     "unzipper": "^0.12.3"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.25.4",
+    "@eslint/js": "^9.9.1",
+    "chai": "^5.1.1",
+    "eslint": "^9.9.1",
+    "globals": "^15.9.0",
+    "jest": "^29.7.0",
+    "mocha": "^10.7.3"
   }
 }
