@@ -1,32 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Customize Test Cases</title>
-</head>
-<body>
-    <h1>Customize Test Cases</h1>
-    <form action="/customize-tests" method="POST">
-        <input type="hidden" name="framework" value="<%= framework %>">
-        <input type="hidden" name="functions" value='<%= JSON.stringify(functions) %>'>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        <% functions.forEach(function(fn) { %>
-            <div class="test-case">
-                <h3>Function: <%= fn.name %></h3>
-                <p>Description: <%= fn.description %></p>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        color: #333;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh; /* Ensure the body height covers the viewport */
+      }
 
-                <label for="<%= fn.name %>-params">Customize Parameters (comma-separated):</label>
-                <input type="text" id="<%= fn.name %>-params" name="customizations[<%= fn.name %>][parameters]" placeholder="e.g., 1, 2">
+      .container {
+        max-width: 800px;
+        width: 100%;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        box-sizing: border-box;
+        margin: 20px; /* Add margin to ensure it's not touching the edges */
+      }
 
-                <label for="<%= fn.name %>-expected">Expected Result:</label>
-                <input type="text" id="<%= fn.name %>-expected" name="customizations[<%= fn.name %>][expected]" placeholder="e.g., 3">
-            </div>
+      h1 {
+        color: #4a90e2;
+      }
+
+      div {
+        margin-bottom: 20px;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #fafafa;
+      }
+
+      h3 {
+        margin: 0 0 10px;
+        color: #333;
+      }
+
+      p {
+        margin: 0 0 10px;
+        color: #666;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #333;
+      }
+
+      input[type="text"] {
+        width: calc(100% - 22px);
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        margin-bottom: 10px;
+      }
+
+      button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        background-color: #4a90e2;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #357abd;
+      }
+
+      button:focus {
+        outline: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Customize Your Test Cases</h1>
+      <form action="/customize-tests" method="POST">
+        <input type="hidden" name="framework" value="<%= framework %>" />
+        <input
+          type="hidden"
+          name="functions"
+          value="<%= JSON.stringify(functions) %>" />
+
+        <% functions.forEach(function(fn, index) { %>
+        <div>
+          <h3><%= fn.name %></h3>
+          <p><%= fn.description %></p>
+
+          <label for="params-<%= index %>">Parameters (comma separated):</label>
+          <input
+            type="text"
+            id="params-<%= index %>"
+            name="customizations[<%= fn.name %>][parameters]" />
+
+          <label for="expected-<%= index %>">Expected Result:</label>
+          <input
+            type="text"
+            id="expected-<%= index %>"
+            name="customizations[<%= fn.name %>][expected]" />
+        </div>
         <% }) %>
 
-        <button type="submit">Generate Customized Test Cases</button>
-    </form>
-
-    <a href="/">Go Back</a>
-</body>
+        <button type="submit">Generate Test Cases</button>
+      </form>
+    </div>
+  </body>
 </html>

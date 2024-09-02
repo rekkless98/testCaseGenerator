@@ -1,13 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Generated Test Cases</title>
-</head>
-<body>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        color: #333;
+        margin: 0;
+        padding: 20px;
+      }
+
+      h1 {
+        color: #4a90e2;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .code-container {
+        width: 100%;
+        max-width: 900px;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+        margin: 0 auto;
+      }
+
+      .code-content {
+        font-family: "Courier New", Courier, monospace;
+        color: #333;
+        white-space: pre-wrap;
+      }
+
+      .test-case-number {
+        display: block;
+        margin-bottom: 10px;
+        font-weight: bold;
+        color: #4a90e2;
+      }
+
+      .button-container {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      .button {
+        background-color: #4a90e2;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        padding: 10px 20px;
+        text-decoration: none;
+        font-weight: bold;
+        display: inline-block;
+        margin: 5px;
+      }
+
+      .button:hover {
+        background-color: #357abd;
+      }
+    </style>
+  </head>
+  <body>
     <h1>Generated Test Cases</h1>
-    <pre><%= testCases %></pre>
-    <a href="/">Go Back</a>
-</body>
+    <div class="code-container" id="code-container">
+      <pre class="code-content"><%= testCases %></pre>
+    </div>
+    <div class="button-container">
+      <a href="/" class="button">Home</a>
+      <button id="download-button" class="button">Download as JS</button>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const codeContainer = document.getElementById("code-container");
+        const preElement = codeContainer.querySelector(".code-content");
+        const testCases = preElement.textContent.split("\n");
+
+        // Create numbered test case elements
+        let numberedTestCasesHtml = "";
+        let testCaseCount = 1;
+        let downloadContent = "";
+
+        testCases.forEach((line) => {
+          if (line.trim().startsWith("test(")) {
+            numberedTestCasesHtml += `<span class="test-case-number">Test case ${testCaseCount++}:</span>\n`;
+            // Append comment for downloadable content
+            downloadContent += `// Test case ${testCaseCount - 1}\n`;
+          }
+          numberedTestCasesHtml += line + "\n";
+          // Append line to downloadable content
+          downloadContent += line + "\n";
+        });
+
+        preElement.innerHTML = numberedTestCasesHtml;
+
+        // Download button functionality
+        document
+          .getElementById("download-button")
+          .addEventListener("click", function () {
+            const blob = new Blob([downloadContent], {
+              type: "text/javascript",
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "generated-tests.js";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          });
+      });
+    </script>
+  </body>
 </html>
