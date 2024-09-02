@@ -98,7 +98,7 @@ function analyzeCode(code) {
         description,
         body: code.slice(node.body.start, node.body.end),
         loc: node.loc,
-        type: "function", // Mark this as a regular function
+        type: "function", 
       });
     }
     // Identify Express routes (e.g., app.get, app.post)
@@ -126,12 +126,12 @@ function analyzeCode(code) {
             : [];
           const description = extractFunctionDescription(comments);
           functions.push({
-            name: `${callee.property.name.toUpperCase()} ${route}`, // Name the function as HTTP_METHOD /route
+            name: `${callee.property.name.toUpperCase()} ${route}`, 
             params,
             description,
             body: code.slice(handler.body.start, handler.body.end),
             loc: node.loc,
-            type: "route", // Mark this as a route
+            type: "route", 
           });
         }
       }
@@ -205,7 +205,7 @@ function generateJestTests(functions, customizations) {
         const { name, description, body } = fn;
         let { parameters = [], expected = "" } = customizations[name] || {};
 
-        // Ensure 'parameters' is always an array
+        // Ensuring 'parameters' is always an array
         if (!Array.isArray(parameters)) {
           parameters =
             typeof parameters === "string"
@@ -249,7 +249,7 @@ test('${name}', () => {
 function generateJestAPITests(fn, customizations) {
   const { name, description } = fn;
   const [method, route] = name.split(" ");
-  const testRoute = route.replace(/^['"]|['"]$/g, ""); // Clean the route from quotes
+  const testRoute = route.replace(/^['"]|['"]$/g, ""); 
 
   return `
 test('${name}', async () => {
@@ -300,7 +300,6 @@ function generateMochaTests(functions, customizations) {
         const { params, description, body } = fn;
         let { parameters = [], expected = "" } = customizations[fn.name] || {};
 
-        // Ensure 'parameters' is always an array
         if (!Array.isArray(parameters)) {
           parameters =
             typeof parameters === "string"
@@ -308,7 +307,7 @@ function generateMochaTests(functions, customizations) {
               : [parameters];
         }
 
-        // Format the parameters for the function call
+        // Formating the parameters for the function call
         const paramString = parameters.length > 0 ? parameters.join(", ") : "";
 
         // Determine the expected result
@@ -339,7 +338,7 @@ describe('${fn.name}', function() {
 function generateMochaAPITests(fn, customizations) {
   const { name, description } = fn;
   const [method, route] = name.split(" ");
-  const testRoute = route.replace(/^['"]|['"]$/g, ""); // Clean the route from quotes
+  const testRoute = route.replace(/^['"]|['"]$/g, ""); 
 
   return `
 describe('${name}', function() {
