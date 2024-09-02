@@ -1,59 +1,59 @@
-# name: CI
+name: CI intergration testing
 
-# on:
-#   push:
-#     branches:
-#       - master  
-#   pull_request:
-#     branches:
-#       - master  
+on:
+  push:
+    branches:
+      - master  
+  pull_request:
+    branches:
+      - master  
 
-# jobs:
-#   build:
-#     runs-on: windows-latest  # Runs the job on the latest windows image
+jobs:
+  build:
+    runs-on: windows-latest  # Runs the job on the latest windows image
 
-#     steps:
-#     - name: Checkout code
-#       uses: actions/checkout@v3
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-#     - name: Set up Node.js
-#       uses: actions/setup-node@v3
-#       with:
-#         node-version: '14'  
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '14'  
 
-#     - name: Install dependencies
-#       run: npm install
+    - name: Install dependencies
+      run: npm install
 
-#     - name: Run tests
-#       run: npm test
+    - name: Run tests
+      run: npm test
 
     # - name: Lint code
     #   run: npm run lint
 
 
     # .github/workflows/ci.yml
-name: CI Pipeline
+# name: CI Pipeline
 
-on: [push, pull_request]
+# on: [push, pull_request]
 
-jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+# jobs:
+#   build-and-test:
+#     runs-on: windows-latest  # Runs the job on the latest windows image
 
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
+#     steps:
+#     - name: Checkout Code
+#       uses: actions/checkout@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16'
+#     - name: Set up Node.js
+#       uses: actions/setup-node@v2
+#       with:
+#         node-version: '16'
 
-    - name: Install Dependencies
-      run: npm install
+#     - name: Install Dependencies
+#       run: npm install
 
-    - name: Generate Tests
-      run: node generate-tests.js # Your script for test generation
+#     - name: Generate Tests
+#       run: node generate-tests.js # Your script for test generation
 
-    - name: Run Tests
-      run: npm test
+#     - name: Run Tests
+#       run: npm test
