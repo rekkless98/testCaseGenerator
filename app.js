@@ -12,7 +12,7 @@ const bodyParser = require("body-parser");
 const app = express();
 const upload = multer({ dest: "uploads/" });
 
-app.use(express.static("public")); // Serve static files from 'public'
+app.use(express.static("public")); 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -213,7 +213,7 @@ function generateJestTests(functions, customizations) {
               : [parameters];
         }
 
-        // Format the parameters for the function call
+        // Formating the parameters for the function call
         const paramString =
           parameters.length > 0
             ? parameters
@@ -221,7 +221,7 @@ function generateJestTests(functions, customizations) {
                 .join(", ")
             : "";
 
-        // Determine the expected result
+        // Determining the expected result
         const expectedResult = expected;
         // const expectedResult =
         //   expected !== "" ? expected : evaluateFunctionBody(body);
@@ -290,68 +290,68 @@ test('${name}', async () => {
 //     })
 //     .join("\n");
 // }
-function generateMochaTests(functions, customizations) {
-  return functions
-    .map((fn) => {
-      if (fn.type === "route") {
-        // Generate Mocha tests for Express routes
-        return generateMochaAPITests(fn, customizations);
-      } else {
-        const { params, description, body } = fn;
-        let { parameters = [], expected = "" } = customizations[fn.name] || {};
+// function generateMochaTests(functions, customizations) {
+//   return functions
+//     .map((fn) => {
+//       if (fn.type === "route") {
+//         // Generate Mocha tests for Express routes
+//         return generateMochaAPITests(fn, customizations);
+//       } else {
+//         const { params, description, body } = fn;
+//         let { parameters = [], expected = "" } = customizations[fn.name] || {};
 
-        if (!Array.isArray(parameters)) {
-          parameters =
-            typeof parameters === "string"
-              ? parameters.split(",").map((p) => p.trim())
-              : [parameters];
-        }
+//         if (!Array.isArray(parameters)) {
+//           parameters =
+//             typeof parameters === "string"
+//               ? parameters.split(",").map((p) => p.trim())
+//               : [parameters];
+//         }
 
-        // Formating the parameters for the function call
-        const paramString = parameters.length > 0 ? parameters.join(", ") : "";
+//         // Formating the parameters for the function call
+//         const paramString = parameters.length > 0 ? parameters.join(", ") : "";
 
-        // Determine the expected result
-        // const expectedResult = expected || evaluateFunctionBody(body);
-        const expectedResult = expected;
+//         // Determine the expected result
+//         // const expectedResult = expected || evaluateFunctionBody(body);
+//         const expectedResult = expected;
 
-        // Format the expected result
-        const formattedExpectedResult =
-          expectedResult === "undefined"
-            ? `undefined`
-            : JSON.stringify(expectedResult);
+//         // Format the expected result
+//         const formattedExpectedResult =
+//           expectedResult === "undefined"
+//             ? `undefined`
+//             : JSON.stringify(expectedResult);
 
-        return `
-describe('${fn.name}', function() {
-    it('should return the correct value', function() {
-        const description = \`${description}\`;
-        console.log(description);
-        const result = ${fn.name}(${paramString});
-        expect(result).to.equal(${formattedExpectedResult});
-    });
-});
-        `;
-      }
-    })
-    .join("\n");
-}
+//         return `
+// describe('${fn.name}', function() {
+//     it('should return the correct value', function() {
+//         const description = \`${description}\`;
+//         console.log(description);
+//         const result = ${fn.name}(${paramString});
+//         expect(result).to.equal(${formattedExpectedResult});
+//     });
+// });
+//         `;
+//       }
+//     })
+//     .join("\n");
+// }
 
-function generateMochaAPITests(fn, customizations) {
-  const { name, description } = fn;
-  const [method, route] = name.split(" ");
-  const testRoute = route.replace(/^['"]|['"]$/g, ""); 
+// function generateMochaAPITests(fn, customizations) {
+//   const { name, description } = fn;
+//   const [method, route] = name.split(" ");
+//   const testRoute = route.replace(/^['"]|['"]$/g, ""); 
 
-  return `
-describe('${name}', function() {
-    it('should handle the request correctly', async function() {
-        const description = \`${description}\`;
-        console.log(description);
-        const response = await chai.request(app).${method.toLowerCase()}('${testRoute}');
-        expect(response).to.have.status(200); // Adjust status based on the expected output
-        expect(response.body).to.exist; // Check body or adjust as needed
-    });
-});
-    `;
-}
+//   return `
+// describe('${name}', function() {
+//     it('should handle the request correctly', async function() {
+//         const description = \`${description}\`;
+//         console.log(description);
+//         const response = await chai.request(app).${method.toLowerCase()}('${testRoute}');
+//         expect(response).to.have.status(200); // Adjust status based on the expected output
+//         expect(response.body).to.exist; // Check body or adjust as needed
+//     });
+// });
+//     `;
+// }
 
 function generateTests(functions, framework = "jest", customizations) {
   if (framework === "jest") {
