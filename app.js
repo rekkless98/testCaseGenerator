@@ -2,13 +2,10 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const ejs = require("ejs");
-const { exec } = require("child_process");
 const unzipper = require("unzipper");
 const esprima = require("esprima");
 const nlp = require("compromise");
 const bodyParser = require("body-parser");
-
 const app = express();
 const upload = multer({ dest: "uploads/" });
 
@@ -146,54 +143,6 @@ function extractFunctionDescription(comments) {
   return doc.sentences().first().text() || "No description available.";
 }
 
-function evaluateFunctionBody(body) {
-  try {
-    const func = new Function(`return ${body}`);
-    console.log("func", func);
-    return func();
-  } catch (error) {
-    return "/* Could not evaluate function body */";
-  }
-}
-
-// function generateJestTests(functions, customizations) {
-//   return functions
-//     .map((fn) => {
-//       if (fn.type === "route") {
-//         // Generate Jest tests for Express routes
-//         return generateJestAPITests(fn, customizations);
-//       } else {
-//         // Generate Jest tests for regular functions
-//         const { name, description, body } = fn;
-//         const { parameters = [], expected = "" } = customizations[name] || {};
-//         // Format the parameters for the function call
-//         const paramArray = Array.isArray(parameters) ? parameters : [];
-//         console.log("parameters: ", paramArray);
-//         const paramString = paramArray
-//           .map((param) => (isNaN(param) ? `'${param}'` : param))
-//           .join(", ");
-
-//         // Determine the expected result
-//         const expectedResult =
-//           expected !== "" ? expected : evaluateFunctionBody(body);
-
-//         // Format the expected result
-//         const formattedExpectedResult = isNaN(expectedResult)
-//           ? `'${expectedResult}'`
-//           : expectedResult;
-
-//         return `
-// test('${name}', () => {
-//     // Description is optional and can be used for documentation
-//     console.log(${JSON.stringify(description)});
-//     const result = ${name}(${paramString});
-//     expect(result).toBe(${formattedExpectedResult});
-// });
-//             `;
-//       }
-//     })
-//     .join("\n");
-// }
 function generateJestTests(functions, customizations) {
   return functions
     .map((fn) => {
@@ -204,7 +153,6 @@ function generateJestTests(functions, customizations) {
         // Generate Jest tests for regular functions
         const { name, description, body } = fn;
         let { parameters = [], expected = "" } = customizations[name] || {};
-
         // Ensuring 'parameters' is always an array
         if (!Array.isArray(parameters)) {
           parameters =
@@ -212,7 +160,6 @@ function generateJestTests(functions, customizations) {
               ? parameters.split(",").map((p) => p.trim())
               : [parameters];
         }
-
         // Formating the parameters for the function call
         const paramString =
           parameters.length > 0
@@ -220,7 +167,6 @@ function generateJestTests(functions, customizations) {
                 .map((param) => (isNaN(param) ? `'${param}'` : param))
                 .join(", ")
             : "";
-
         // Determining the expected result
         const expectedResult = expected;
         // const expectedResult =
@@ -246,112 +192,49 @@ test('${name}', () => {
     .join("\n");
 }
 
-function generateJestAPITests(fn, customizations) {
-  const { name, description } = fn;
-  const [method, route] = name.split(" ");
-  const testRoute = route.replace(/^['"]|['"]$/g, ""); 
+function generateMochaTests(functions, customizations) {
+  return functions
+    .map((fn) => {
+      if (fn.type === "route") {
+        // Generate Mocha tests for Express routes
+        return generateMochaAPITests(fn, customizations);
+      } else {
+        const {description} = fn;
+        let { parameters = [], expected = "" } = customizations[fn.name] || {};
 
-  return `
-test('${name}', async () => {
-    // Description is optional and can be used for documentation
-    console.log(${JSON.stringify(description)});
-    const response = await request(app).${method.toLowerCase()}('${testRoute}');
-    expect(response.body).toBeDefined();
-    `;
+        if (!Array.isArray(parameters)) {
+          parameters =
+            typeof parameters === "string"
+              ? parameters.split(",").map((p) => p.trim())
+              : [parameters];
+        }
+
+        // Formating the parameters for the function call
+        const paramString = parameters.length > 0 ? parameters.join(", ") : "";
+
+        // Determine the expected result
+        const expectedResult = expected;
+
+        // Format the expected result
+        const formattedExpectedResult =
+          expectedResult === "undefined"
+            ? `undefined`
+            : JSON.stringify(expectedResult);
+
+        return `
+describe('${fn.name}', function() {
+    it('should return the correct value', function() {
+        const description = \`${description}\`;
+        console.log(description);
+        const result = ${fn.name}(${paramString});
+        expect(result).to.equal(${formattedExpectedResult});
+    });
+});
+        `;
+      }
+    })
+    .join("\n");
 }
-// expect(response.status).toBe(200); // status based on the expected output
-// function generateMochaTests(functions, customizations) {
-//   return functions
-//     .map((fn) => {
-//       if (fn.type === "route") {
-//         // Generate Mocha tests for Express routes
-//         return generateMochaAPITests(fn, customizations);
-//       } else {
-//         const { params, description, body } = fn;
-//         const { parameters = [], expected = "" } =
-//           customizations[fn.name] || {};
-
-//         // Ensure parameters is an array
-//         const paramArray = Array.isArray(parameters) ? parameters : [];
-//         const paramString = paramArray.join(", ");
-//         const expectedResult = expected || evaluateFunctionBody(body);
-
-//         return `
-// describe('${fn.name}', function() {
-//     it('should return the correct value', function() {
-//         const description = \`${description}\`;
-//         console.log(description);
-//         const result = ${fn.name}(${paramString});
-//         expect(result).to.equal(${JSON.stringify(expectedResult)});
-//     });
-// });
-//             `;
-//       }
-//     })
-//     .join("\n");
-// }
-// function generateMochaTests(functions, customizations) {
-//   return functions
-//     .map((fn) => {
-//       if (fn.type === "route") {
-//         // Generate Mocha tests for Express routes
-//         return generateMochaAPITests(fn, customizations);
-//       } else {
-//         const { params, description, body } = fn;
-//         let { parameters = [], expected = "" } = customizations[fn.name] || {};
-
-//         if (!Array.isArray(parameters)) {
-//           parameters =
-//             typeof parameters === "string"
-//               ? parameters.split(",").map((p) => p.trim())
-//               : [parameters];
-//         }
-
-//         // Formating the parameters for the function call
-//         const paramString = parameters.length > 0 ? parameters.join(", ") : "";
-
-//         // Determine the expected result
-//         // const expectedResult = expected || evaluateFunctionBody(body);
-//         const expectedResult = expected;
-
-//         // Format the expected result
-//         const formattedExpectedResult =
-//           expectedResult === "undefined"
-//             ? `undefined`
-//             : JSON.stringify(expectedResult);
-
-//         return `
-// describe('${fn.name}', function() {
-//     it('should return the correct value', function() {
-//         const description = \`${description}\`;
-//         console.log(description);
-//         const result = ${fn.name}(${paramString});
-//         expect(result).to.equal(${formattedExpectedResult});
-//     });
-// });
-//         `;
-//       }
-//     })
-//     .join("\n");
-// }
-
-// function generateMochaAPITests(fn, customizations) {
-//   const { name, description } = fn;
-//   const [method, route] = name.split(" ");
-//   const testRoute = route.replace(/^['"]|['"]$/g, ""); 
-
-//   return `
-// describe('${name}', function() {
-//     it('should handle the request correctly', async function() {
-//         const description = \`${description}\`;
-//         console.log(description);
-//         const response = await chai.request(app).${method.toLowerCase()}('${testRoute}');
-//         expect(response).to.have.status(200); // Adjust status based on the expected output
-//         expect(response.body).to.exist; // Check body or adjust as needed
-//     });
-// });
-//     `;
-// }
 
 function generateTests(functions, framework = "jest", customizations) {
   if (framework === "jest") {
@@ -360,16 +243,6 @@ function generateTests(functions, framework = "jest", customizations) {
     return generateMochaTests(functions, customizations);
   }
 }
-
-app.post("/customize-tests", (req, res) => {
-  const framework = req.body.framework || "jest";
-  const functions = JSON.parse(req.body.functions);
-  const customizations = req.body.customizations || {};
-
-  const testCases = generateTests(functions, framework, customizations);
-
-  res.render("result", { testCases });
-});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -1,3 +1,6 @@
+module.exports = { subtract, divide };
+
+
 // Example api function to test
 function add(a, b) {
     if (typeof a !== 'number' || typeof b !== 'number') {
@@ -16,33 +19,6 @@ function divide(a, b) {
   return a / b;
 }
 
-module.exports = { subtract, divide };
-
-//   // Test case 1
-// test('add', () => {
-//   // Description is optional and can be used for documentation
-//   console.log("This function adds two numbers and returns the result");
-//   const result = add(1, 2);
-//   expect(result).toBe(3);
-// });
-      
-
-// // Test case 2
-// test('subtract', () => {
-//   // Description is optional and can be used for documentation
-//   console.log("*\n * Subtract two numbers.\n *");
-//   const result = subtract(5, 3);
-//   expect(result).toBe(2);
-// });
-      
-
-// // Test case 3
-// test('divide', () => {
-//   // Description is optional and can be used for documentation
-//   console.log("Divides two numbers and handles division by zero");
-//   const result = divide(4, 2);
-//   expect(result).toBe(2);
-// });
   // Example api test cases using Jest or Mocha
   describe('add function', () => {
     it('should return correct sum for positive numbers', () => {
