@@ -137,6 +137,42 @@ function analyzeCode(code) {
   return functions;
 }
 
+function generateJestAPITests(fn, customizations) {
+  const { name, description, body } = fn;
+        let { parameters = [], expected = "" } = customizations[name] || {};
+        // Ensuring 'parameters' is always an array
+        if (!Array.isArray(parameters)) {
+          parameters =
+            typeof parameters === "string"
+              ? parameters.split(",").map((p) => p.trim())
+              : [parameters];
+        }
+        // Formating the parameters for the function call
+        const paramString =
+          parameters.length > 0
+            ? parameters
+                .map((param) => (isNaN(param) ? `'${param}'` : param))
+                .join(", ")
+            : "";
+        // Determining the expected result
+        const expectedResult = expected;
+        const formattedExpectedResult =
+          expectedResult === undefined
+            ? `undefined`
+            : isNaN(expectedResult)
+            ? `'${expectedResult}'`
+            : expectedResult;
+
+        return `
+test('${name}', () => {
+    // Description is optional and can be used for documentation
+    console.log(${JSON.stringify(description)});
+    const result = ${name}(${paramString});
+    expect(result).toBe(${formattedExpectedResult});
+});
+    `;
+}
+
 function extractFunctionDescription(comments) {
   if (comments.length === 0) return "No description available.";
   const doc = nlp(comments.join(" "));
