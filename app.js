@@ -7,7 +7,21 @@ const esprima = require("esprima");
 const nlp = require("compromise");
 const bodyParser = require("body-parser");
 const app = express();
-const upload = multer({ dest: "uploads/" });
+
+// Multer configuration with ZIP file validation
+const upload = multer({
+  dest: "uploads/",
+  fileFilter: (req, file, cb) => {
+      const allowedMimeTypes = ['application/zip', 'application/x-zip-compressed'];
+      const fileExtension = path.extname(file.originalname).toLowerCase();
+      
+      if (allowedMimeTypes.includes(file.mimetype) && fileExtension === '.zip') {
+          cb(null, true);
+      } else {
+          cb(new Error("Only .zip files are allowed!"));
+      }
+  }
+});
 
 app.use(express.static("public")); 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -16,62 +30,44 @@ app.set("views", path.join(__dirname, "views"));
 
 // Serve the homepage
 app.get("/", (req, res) => {
-  res.render("index"); // Render 'index.ejs'
+  res.render("index", { errorMessage: req.query.error }); // Render 'index.ejs' and pass any error message
 });
 
 // Handle file uploads
-app.post("/upload", upload.single("folder"), (req, res) => {
-  const { framework } = req.body;
-  const folderPath = req.file.path;
-  const extractPath = path.join(
-    __dirname,
-    "uploads",
-    req.file.filename + "_extracted"
-  );
+app.post("/upload", (req, res) => {
+  upload.single("folder")(req, res, (err) => {
+      if (err) {
+          // Redirect to the homepage with an error message
+          return res.redirect("/?error=" + encodeURIComponent(err.message));
+      }
 
-  fs.mkdirSync(extractPath, { recursive: true });
+      if (!req.file) {
+          return res.redirect("/?error=" + encodeURIComponent("No file uploaded!"));
+      }
 
-  fs.createReadStream(folderPath)
-    .pipe(unzipper.Extract({ path: extractPath }))
-    .on("close", () => {
-      console.log("Unzipping successful");
-      const functions = processFiles(extractPath);
-      res.render("customize", { functions, framework });
-    })
-    .on("error", (err) => {
-      console.error("Error during unzipping:", err);
-      res.status(500).send("Error unzipping the folder");
-    });
-});
+      const { framework } = req.body;
+      const folderPath = req.file.path;
+      const extractPath = path.join(
+          __dirname,
+          "uploads",
+          req.file.filename + "_extracted"
+      );
 
-// Handle test case customization
-app.post("/customize-tests", (req, res) => {
-  const framework = req.body.framework || "jest"; // Default to 'jest' if not provided
-  const functions = JSON.parse(req.body.functions);
-  const customizations = req.body.customizations || {};
+      fs.mkdirSync(extractPath, { recursive: true });
 
-  const testCases = generateTests(functions, framework, customizations);
-
-  res.render("result", { testCases });
-});
-
-function processFiles(folderPath) {
-  const files = fs.readdirSync(folderPath);
-  const functions = [];
-  files.forEach((file) => {
-    const filePath = path.join(folderPath, file);
-    const stat = fs.statSync(filePath);
-    if (stat.isDirectory()) {
-      functions.push(...processFiles(filePath));
-    } else if (filePath.endsWith(".js")) {
-      const code = fs.readFileSync(filePath, "utf-8");
-      const analyzedFunctions = analyzeCode(code);
-      functions.push(...analyzedFunctions);
-    }
+      fs.createReadStream(folderPath)
+          .pipe(unzipper.Extract({ path: extractPath }))
+          .on("close", () => {
+              console.log("Unzipping successful");
+              const functions = processFiles(extractPath);
+              res.render("customize", { functions, framework });
+          })
+          .on("error", (err) => {
+              console.error("Error during unzipping:", err);
+              res.status(500).send("Error unzipping the folder");
+          });
   });
-  return functions;
-}
-
+});
 function analyzeCode(code) {
   const parsed = esprima.parseScript(code, {
     comment: true,
@@ -136,6 +132,38 @@ function analyzeCode(code) {
   });
   return functions;
 }
+function processFiles(folderPath) {
+  const files = fs.readdirSync(folderPath);
+  const functions = [];
+  files.forEach((file) => {
+    const filePath = path.join(folderPath, file);
+    const stat = fs.statSync(filePath);
+    if (stat.isDirectory()) {
+      functions.push(...processFiles(filePath));
+    } else if (filePath.endsWith(".js")) {
+      const code = fs.readFileSync(filePath, "utf-8");
+      const analyzedFunctions = analyzeCode(code);
+      functions.push(...analyzedFunctions);
+    }
+  });
+  return functions;
+}
+function extractFunctionDescription(comments) {
+  if (comments.length === 0) return "No description available.";
+  const doc = nlp(comments.join(" "));
+  return doc.sentences().first().text() || "No description available.";
+}
+// Handle test case customization
+app.post("/customize-tests", (req, res) => {
+  const framework = req.body.framework || "jest"; // Default to 'jest' if not provided
+  const functions = JSON.parse(req.body.functions);
+  const customizations = req.body.customizations || {};
+
+  const testCases = generateTests(functions, framework, customizations);
+
+  res.render("result", { testCases });
+});
+
 
 function generateJestAPITests(fn, customizations) {
   const { name, description, body } = fn;
@@ -165,18 +193,12 @@ function generateJestAPITests(fn, customizations) {
 
         return `
 test('${name}', () => {
-    // Description is optional and can be used for documentation
+    // Description is optional and can be used for documentation seperately after downloading this file
     console.log(${JSON.stringify(description)});
     const result = ${name}(${paramString});
     expect(result).toBe(${formattedExpectedResult});
 });
     `;
-}
-
-function extractFunctionDescription(comments) {
-  if (comments.length === 0) return "No description available.";
-  const doc = nlp(comments.join(" "));
-  return doc.sentences().first().text() || "No description available.";
 }
 
 function generateJestTests(functions, customizations) {

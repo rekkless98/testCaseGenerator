@@ -81,6 +81,11 @@
   <body>
     <div class="container">
       <h1>Test Case Generator</h1>
+      <% if (errorMessage) { %>
+        <div style="color: red;">
+            <p><%= errorMessage %></p>
+        </div>
+    <% } %>
       <form action="/upload" method="POST" enctype="multipart/form-data">
         <div class="form-group">
           <label for="folder">Upload your JavaScript file:</label>
